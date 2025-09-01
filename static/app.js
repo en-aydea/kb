@@ -54,11 +54,11 @@ document.addEventListener('DOMContentLoaded', () => {
       submitLoanApplication: async (params) => {
         const payload = {
           customer_id: String(params.customer_id),
-          national_id: String(params.national_id),
-          monthly_income: Number(params.monthly_income),
+
+          
           desired_loan_amount: Number(params.desired_loan_amount),
           term_months: Number(params.term_months || 12),
-          channel: params.channel || 'voice',
+
         };
         const resp = await fetch('/loan/apply', {
           method: 'POST',

@@ -43,13 +43,10 @@ def loan_apply(payload: dict):
     """
     Beklenen alanlar:
       - customer_id (str)
-      - national_id (str, 11 hane - demo doğrulama basit)
-      - monthly_income (float)
       - desired_loan_amount (float)
       - term_months (int)
-      - channel (str, opsiyonel)
     """
-    required = ["customer_id", "national_id", "monthly_income", "desired_loan_amount", "term_months"]
+    required = ["customer_id", "desired_loan_amount", "term_months"]
     for k in required:
         if k not in payload:
             raise HTTPException(status_code=400, detail=f"Missing field: {k}")
@@ -57,11 +54,8 @@ def loan_apply(payload: dict):
     # Pseudo profil + finans
     application = {
         "customer_id": str(payload["customer_id"]),
-        "national_id": str(payload["national_id"]),
-        "monthly_income": float(payload["monthly_income"]),
         "desired_loan_amount": float(payload["desired_loan_amount"]),
         "term_months": int(payload["term_months"]),
-        "channel": payload.get("channel", "voice"),
         "customer_profile": fetch_customer_profile(str(payload["customer_id"])) or {
             "customer_id": str(payload["customer_id"]),
             "name": "Müşterimiz",
@@ -74,12 +68,8 @@ def loan_apply(payload: dict):
     fin = fetch_financials(application["customer_id"])
     decision = rules_loan_eligibility(application, fin)
 
-    # (Demo) KYC: TCKN son hane çiftse OK
-    try:
-        kyc_ok = int(application["national_id"][-1]) % 2 == 0
-    except Exception:
-        kyc_ok = False
-    decision["final_approve"] = bool(decision.get("approve") and kyc_ok)
+    # Final onay: yalnızca kural sonuçları (KYC demodan çıkarıldı)
+    decision["final_approve"] = bool(decision.get("approve"))
 
     customer_name = application["customer_profile"]["name"]
     if decision["final_approve"]:
@@ -94,20 +84,20 @@ def loan_apply(payload: dict):
         customer_summary = (
             f"{customer_name}, maalesef bu aşamada kredi başvurunuz ön onay alamadı. "
             f"Nedenler: {', '.join(decision.get('reasons', []))}. "
-            "Gelir/borç dengesi veya kredi skoru iyileştiğinde tekrar deneyebilirsiniz."
+            "Kredi skoru veya genel risk göstergeleri iyileştiğinde tekrar deneyebilirsiniz."
         )
 
     return JSONResponse({
-        "decision": decision,
-        "context": {
-            "customer_name": customer_name,
-            "customer_summary": customer_summary,
-            "internal_summary": {
-                "customer_id": application["customer_id"],
-                "score": fin.get("credit_score"),
-                "dsr": decision.get("dsr"),
-                "policy_rate": decision.get("policy_rate"),
-                "notes": decision.get("reasons"),
-            }
+    "decision": decision,
+    "context": {
+        "customer_name": customer_name,
+        "customer_summary": customer_summary,
+        "internal_summary": {
+            "customer_id": application["customer_id"],
+            "score": fin.get("credit_score"),
+            "dsr": decision.get("dsr"),            # <-- geri ekledik
+            "policy_rate": decision.get("policy_rate"),
+            "notes": decision.get("reasons"),
         }
-    })
+    }
+})

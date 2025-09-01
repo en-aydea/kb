@@ -19,11 +19,13 @@ CREATE TABLE financials (
 );
 
 INSERT INTO customers VALUES
-('10001','Ayşe Korkmaz','Mass','salaried',29),
-('10002','Mehmet Demir','Affluent','self_employed',41),
-('10003','Zeynep Yıldız','Mass','student',19);
+('2349','Kerem Ardağ','Affluent','salaried',49),
+('1234','Enes Aydın','Affluent','salaried',34),
+('2838','Eralp Şirincan','Mass','salaried',55),
+('7563','Kasım Yüce','Mass','salaried',40);
 
 INSERT INTO financials VALUES
-('10001', 42000,  5000, 680),
-('10002', 95000, 12000, 720),
-('10003',  6000,  1500, 510);
+('2349', 420000,  50000, 1800),
+('1234', 95000, 12000, 1500),
+('2838', 130000, 120000, 900),
+('7563',  28000,  50000, 700);
