@@ -5,52 +5,32 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Agentic Voice Demo</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      text-align: center;
-      background: #f9f9f9;
-    }
-    header {
-      background: #ce0c2d;  /* kırmızı şerit */
-      padding: 6rem;        /* daha geniş alan */
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    header img {
-      max-height: 80px;     /* logo boyutu */
-      width: auto;
-      display: block;
-    }
-    main {
-      padding: 2rem;
-    }
-    h2 {
-      margin-bottom: 2rem;
-      font-weight: 600;
-    }
+    body { font-family: Arial, sans-serif; margin:0; padding:0; text-align:center; background:#f9f9f9; }
+    header { background:#ce0c2d; padding:6rem; display:flex; align-items:center; justify-content:center; }
+    header img { max-height:48px; width:auto; display:block; }
+    main { padding:2rem; }
+    h2 { margin-bottom:2rem; font-weight:600; }
   </style>
 </head>
 <body>
-<header>
-  <img
-    src="https://kb-knwb.onrender.com/static/logo.png?v=2"
-    alt="karabank"
-    style="max-height: 96px; width: auto; display: block; margin: 0 auto; object-fit: contain; border: 1px dashed rgba(255,255,255,.3); padding: 4px; background: transparent;"
-  />
-</header>
+  <header>
+    <!-- Logo tam URL ya da /static ile; hangisi sende çalışıyorsa onu kullan -->
+
+ <img src="https://kb-knwb.onrender.com/static/logo.png?v=3" alt="karabank">
+  </header>
 
   <main>
     <h2>
-      Sesli Agentic AI Kredi Demo <br/>
+      Sesli AI Kredi Demo <br/>
       İşlem yapmak için telefon simgesine tıklayın.
     </h2>
 
-    <!-- ElevenLabs widget -->
+    <!-- 1) Önce client tools -->
+    <script src="/static/app.js"></script>
+
+    <!-- 2) Sonra widget -->
     <elevenlabs-convai
-      agent-id="agent_0801k437m6hpe9c8v594qmkrz6h0" 
+      agent-id="agent_0801k437m6hpe9c8v594qmkrz6h0"
       override-language="tr"
       variant="expanded"
       listening-text="Dinliyorum…"
