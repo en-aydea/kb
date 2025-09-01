@@ -3,7 +3,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 
-from tools import init_db, fetch_customer_profile, fetch_financials, rules_loan_eligibility
+from .tools import init_db, fetch_customer_profile, fetch_financials, rules_loan_eligibility
 
 app = FastAPI(title="Agentic Voice Banking")
 
