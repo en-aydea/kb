@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Agentic Voice Demo</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <header>
+    <h1>🎙️ Agentic Voice Demo</h1>
+    <p>ElevenLabs Agent + FastAPI (ücretsiz PoC)</p>
+  </header>
+
+  <main class="wrap">
+    <section class="card">
+      <h2>Sesli Deneyim</h2>
+      <p>Butona basıp konuşmaya başlayın. Müşteri numaranızı <i>tek tek rakamlarla</i> söyleyin; ajan adınızla hitap ederek kredi başvurusunu yönetecek.</p>
+      <!-- ElevenLabs ConvAI Widget -->
+      <elevenlabs-convai
+        agent-id="AGENT_IDNİZİ_BURAYA_YAZIN"
+        override-language="tr"
+        variant="expanded"
+        listening-text="Dinliyorum…"
+        speaking-text="Yanıtlanıyor…"
+        action-text="Konuşmayı Başlat"
+      ></elevenlabs-convai>
+    </section>
+
+    <section class="card">
+      <h2>Arka Uç Uçları</h2>
+      <ul>
+        <li><code>GET /profile/{customer_id}</code></li>
+        <li><code>POST /loan/apply</code></li>
+        <li><code>GET /healthz</code></li>
+      </ul>
+    </section>
+  </main>
+
+  <footer><small>Demo amaçlıdır. Gerçek müşteri verisi kullanılmaz.</small></footer>
+
+  <!-- Widget embed -->
+  <script src="https://unpkg.com/@elevenlabs/convai-widget-embed" async type="text/javascript"></script>
+  <script src="/static/app.js"></script>
+</body>
+</html>
