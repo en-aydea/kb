@@ -1,45 +1,48 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Agentic Voice Demo</title>
-  <link rel="stylesheet" href="/static/style.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+      background: #f9f9f9;
+    }
+    header {
+      background: #ce0c2d; 
+      padding: 1rem;
+    }
+    header img {
+      max-height: 60px;
+    }
+    main {
+      padding: 2rem;
+    }
+  </style>
 </head>
 <body>
   <header>
-    <h1>🎙️ Agentic Voice Banking</h1>
-    <p>Agentic AI</p>
+ 
+    <img src="/static/logo.png" alt="Demo Logo">
   </header>
 
-  <main class="wrap">
-    <section class="card">
-      <h2>Sesli Deneyim</h2>
-      <p>Butona basıp konuşmaya başlayın. Müşteri numaranızı <i>tek tek rakamlarla</i> söyleyin; ajan adınızla hitap ederek kredi başvurusunu yönetecek.</p>
-      <elevenlabs-convai
-        agent-id="agent_0801k437m6hpe9c8v594qmkrz6h0"
-        override-language="tr"
-        variant="expanded"
-        listening-text="Dinliyorum…"
-        speaking-text="Yanıtlanıyor…"
-        action-text="Konuşmayı Başlat"
-      ></elevenlabs-convai>
-    </section>
+  <main>
+    <h2>Sesli AI Kredi Demo</h2>
 
-    <section class="card">
-      <h2>Arka Uç Uçları</h2>
-      <ul>
-        <li><code>GET /profile/{customer_id}</code></li>
-        <li><code>POST /loan/apply</code></li>
-        <li><code>GET /healthz</code></li>
-      </ul>
-    </section>
+    <!-- ElevenLabs widget -->
+    <elevenlabs-convai
+      agent-id="agent_0801k437m6hpe9c8v594qmkrz6h0"
+      override-language="tr"
+      variant="expanded"
+      listening-text="Dinliyorum…"
+      speaking-text="Yanıtlanıyor…"
+      action-text="Konuşmayı Başlat">
+    </elevenlabs-convai>
+    <script src="https://unpkg.com/@elevenlabs/convai-widget-embed" async></script>
   </main>
-
-
-
-  <!-- Widget embed -->
-  <script src="https://unpkg.com/@elevenlabs/convai-widget-embed" async type="text/javascript"></script>
-  <script src="/static/app.js"></script>
 </body>
 </html>
