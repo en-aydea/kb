@@ -97,10 +97,10 @@ window.clientTools.eligibilityCheck = async ({ customer_id, desired_amount, term
   if (!rec) return { ok: false, error: "customer_not_found" };
 
   const pol = db._policies || {};
-  const minScore = Number(pol.eligibility?.min_credit_score ?? 650);
+  const minScore = Number(pol.eligibility?.min_credit_score ?? 1000);
   const maxDelay = Number(pol.eligibility?.max_delinquency_days ?? 30);
   const maxDsr = Number(pol.eligibility?.max_dsr ?? 0.45);
-  const demoLimit = Number(pol.eligibility?.demo_default_preapproved_limit ?? 50000);
+  const demoLimit = Number(pol.eligibility?.demo_default_preapproved_limit ?? 125000);
   const limit = Number(rec.preapproved_max_amount ?? demoLimit);
 
   // rate by score
