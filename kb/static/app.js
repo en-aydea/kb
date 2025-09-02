@@ -57,8 +57,15 @@ function toDigitsFromTurkishWords(input) {
 
 function normalizeCustomerId(anyForm) {
   const id = toDigitsFromTurkishWords(anyForm);
-  return id.replace(/\D/g, "");
+  // sadece rakamları al
+  const digitsOnly = id.replace(/\D/g, "");
+  // eğer uzun numara dönerse (örn. "2349..." → "2349"), ilk 4 haneyi al
+  if (digitsOnly.length > 4) {
+    return digitsOnly.substring(0, 4);
+  }
+  return digitsOnly;
 }
+
 
 
 // ---------- Load & Cache JSON ----------
