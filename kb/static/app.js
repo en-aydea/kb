@@ -14,7 +14,6 @@ function setDV(patch) {
   el?.setAttribute('dynamic-variables', JSON.stringify({ ...base, ...patch }));
 }
 
-
 function annuity(P, r, n) {
   if (!r || r <= 0) return P / Math.max(1, n);
   return (P * r) / (1 - Math.pow(1 + r, -n));
@@ -23,21 +22,6 @@ function annuity(P, r, n) {
 function round2(x) {
   return Number((Math.round((x + Number.EPSILON) * 100) / 100).toFixed(2));
 }
-
-
-
-function normalizeCustomerId(anyForm) {
-  const id = toDigitsFromTurkishWords(anyForm);
-  // sadece rakamları al
-  const digitsOnly = id.replace(/\D/g, "");
-  // eğer uzun numara dönerse (örn. "2349..." → "2349"), ilk 4 haneyi al
-  if (digitsOnly.length > 4) {
-    return digitsOnly.substring(0, 4);
-  }
-  return digitsOnly;
-}
-
-
 
 // ---------- Load & Cache JSON ----------
 let LOANS_DB = null;
@@ -54,7 +38,6 @@ async function loadDB() {
 function effectiveMonthlyRateForScore(db, score) {
   const base = Number(db._policies?.pricing?.base_monthly_rate ?? 0.045);
   const table = db._policies?.pricing?.risk_addon_by_score || [];
-  // pick first rule with min_score <= score (rules sorted desc by min_score recommended)
   let addon = 0;
   let bestMin = -1;
   for (const r of table) {
@@ -67,7 +50,7 @@ function effectiveMonthlyRateForScore(db, score) {
 }
 
 function dsrOk(incomeMonthly, debtsMonthly, newPayment, maxDsr) {
-  if (!incomeMonthly || incomeMonthly <= 0) return true; // demo tolerance
+  if (!incomeMonthly || incomeMonthly <= 0) return true; // demo toleransı
   const dsr = (Number(debtsMonthly || 0) + Number(newPayment || 0)) / Number(incomeMonthly);
   return dsr <= maxDsr;
 }
@@ -76,48 +59,73 @@ function dsrOk(incomeMonthly, debtsMonthly, newPayment, maxDsr) {
 window.clientTools = window.clientTools || {};
 
 /**
- * getCustomerName(spoken_customer_id: string)
+ * getCustomerName(spoken_customer_id: string | customer_id: string)
+ * - Türkçe sayı kelimeleri + rakam + noktalama tolerant normalizasyon
+ * - DB anahtar uzunluğuna göre kaydırmalı eşleşme
  * -> { ok, customer_id, customer_name }
  */
 window.clientTools.getCustomerName = async (args) => {
   try {
     const rawId = (args && (args.spoken_customer_id ?? args.customer_id)) || "";
-
-    // 1) Kelime → rakam + tüm rakamları bitişik topla (1-2-3-4 → 1234, 1 2 3 4 → 1234)
-    const wordsToDigits = toDigitsFromTurkishWords(rawId);
-    const allDigits = (wordsToDigits || String(rawId)).replace(/\D/g, "");
-
     const db = await loadDB();
 
-    // 2) En iyi 4 haneli eşleşmeyi bul:
-    // - Tam 4 hane ise onu dene
-    // - 4’ten uzunsa, kaydırmalı pencere ile DB’deki bir 4’lü anahtarı ara
-    // - Hiçbiri yoksa ilk 4 haneye düş
-    let id = allDigits;
-    if (allDigits.length !== 4) {
-      let found = null;
-      for (let i = 0; i <= allDigits.length - 4; i++) {
-        const cand = allDigits.slice(i, i + 4);
-        if (db.customers?.[cand]) { found = cand; break; }
+    // Normalize: words → digits + punctuation tolerant
+    const WORD2DIGIT = {
+      "sıfır":"0","sifir":"0","zero":"0","0":"0",
+      "bir":"1","1":"1",
+      "iki":"2","2":"2",
+      "üç":"3","uc":"3","uç":"3","3":"3",
+      "dört":"4","dort":"4","4":"4",
+      "beş":"5","bes":"5","5":"5",
+      "altı":"6","alti":"6","6":"6",
+      "yedi":"7","7":"7",
+      "sekiz":"8","sekis":"8","8":"8",
+      "dokuz":"9","9":"9"
+    };
+    const raw = String(rawId).toLowerCase();
+    const spaced = raw.replace(/[,\u060C;:.\-–—/\\|_]/g, " ");
+    const tokens = spaced.split(/\s+/).filter(Boolean);
+    const buf = [];
+    for (const t of tokens) {
+      if (WORD2DIGIT[t] !== undefined) buf.push(WORD2DIGIT[t]);
+      else {
+        const digits = t.replace(/\D/g, "");
+        if (digits) buf.push(digits);
       }
-      id = found || allDigits.slice(0, 4);
+    }
+    const digitsJoined = buf.join("");
+    if (!digitsJoined) return { ok:false, error:"customer_not_parsed" };
+
+    const keys = Object.keys(db.customers || {});
+    const lengths = Array.from(new Set(keys.map(k => k.length))).sort((a,b)=>a-b);
+    let id = null;
+
+    if (keys.includes(digitsJoined)) id = digitsJoined;
+    if (!id && lengths.length && digitsJoined.length >= Math.min(...lengths)) {
+      outer:
+      for (const L of lengths) {
+        for (let i = 0; i <= digitsJoined.length - L; i++) {
+          const cand = digitsJoined.slice(i, i + L);
+          if (db.customers[cand]) { id = cand; break outer; }
+        }
+      }
+    }
+    if (!id) {
+      const fallbackLen = lengths[0] || 4;
+      id = digitsJoined.slice(0, fallbackLen);
     }
 
     const rec = db.customers?.[id];
-    if (!rec || !rec.name) {
-      console.warn("[getCustomerName] not found:", { rawId, allDigits, id });
-      return { ok:false, error:"customer_not_found", customer_id:id };
-    }
+    if (!rec || !rec.name) return { ok:false, error:"customer_not_found", customer_id:id };
 
     setDV({ customer_id: id, customer_name: rec.name });
-    console.log("[getCustomerName] OK:", { rawId, allDigits, id, name: rec.name });
     return { ok:true, customer_id: id, customer_name: rec.name };
+
   } catch (e) {
     console.error("[getCustomerName] error:", e);
     return { ok:false, error:"unexpected_error" };
   }
 };
-
 
 /**
  * fetchCustomerSnapshot(customer_id: string)
@@ -140,29 +148,26 @@ window.clientTools.eligibilityCheck = async ({ customer_id, desired_amount, term
   if (!rec) return { ok: false, error: "customer_not_found" };
 
   const pol = db._policies || {};
-  const minScore = Number(pol.eligibility?.min_credit_score ?? 1000);
-  const maxDelay = Number(pol.eligibility?.max_delinquency_days ?? 30);
-  const maxDsr = Number(pol.eligibility?.max_dsr ?? 0.45);
-  const demoLimit = Number(pol.eligibility?.demo_default_preapproved_limit ?? 125000);
-  const limit = Number(rec.preapproved_max_amount ?? demoLimit);
+  const minScore  = Number(pol.eligibility?.min_credit_score ?? 1000);        // İSTEDİĞİN GİBİ
+  const maxDelay  = Number(pol.eligibility?.max_delinquency_days ?? 30);
+  const maxDsr    = Number(pol.eligibility?.max_dsr ?? 0.45);
+  const demoLimit = Number(pol.eligibility?.demo_default_preapproved_limit ?? 125000); // İSTEDİĞİN GİBİ
+  const limit     = Number(rec.preapproved_max_amount ?? demoLimit);
 
-  // rate by score
   const monthlyRate = effectiveMonthlyRateForScore(db, Number(rec.credit_score ?? 650));
-
-  // monthly payment estimate for DSR
-  const estPayment = annuity(Number(desired_amount), monthlyRate, Number(term_months));
+  const estPayment  = annuity(Number(desired_amount), monthlyRate, Number(term_months));
 
   const reasons = [];
-  const scoreOK = Number(rec.credit_score ?? 0) >= minScore;
+  const scoreOK  = Number(rec.credit_score ?? 0) >= minScore;
   if (!scoreOK) reasons.push("Kredi skoru eşiğin altında");
 
-  const delayOK = Number(rec.delinquency_days ?? 0) <= maxDelay;
+  const delayOK  = Number(rec.delinquency_days ?? 0) <= maxDelay;
   if (!delayOK) reasons.push("Gecikme gün sayısı yüksek");
 
   const amountOK = Number(desired_amount) <= limit;
   if (!amountOK) reasons.push("Talep edilen tutar ön-onay limitini aşıyor");
 
-  const dsrOK = dsrOk(rec.income_monthly, rec.debts_monthly, estPayment, maxDsr);
+  const dsrOK    = dsrOk(rec.income_monthly, rec.debts_monthly, estPayment, maxDsr);
   if (!dsrOK) reasons.push("Gelir/borç oranı uygun değil (DSR)");
 
   const approve = !!(scoreOK && delayOK && amountOK && dsrOK);
@@ -173,7 +178,7 @@ window.clientTools.eligibilityCheck = async ({ customer_id, desired_amount, term
 
 /**
  * computeRepaymentPlan(amount: number, term_months: number, monthly_rate?: number, customer_id?: string)
- * -> { ok, summary{monthly_payment,total_interest,total_payment}, schedule[] }
+ * -> { ok, summary{monthly_payment,total_interest,total_payment,rate_monthly}, schedule[] }
  */
 window.clientTools.computeRepaymentPlan = async ({ amount, term_months, monthly_rate, customer_id }) => {
   const db = await loadDB();
@@ -182,7 +187,6 @@ window.clientTools.computeRepaymentPlan = async ({ amount, term_months, monthly_
 
   let r = Number(monthly_rate);
   if (!Number.isFinite(r) || r <= 0) {
-    // use policy + score if customer provided
     if (customer_id) {
       const rec = db.customers?.[String(customer_id)];
       r = effectiveMonthlyRateForScore(db, Number(rec?.credit_score ?? 650));
@@ -190,7 +194,6 @@ window.clientTools.computeRepaymentPlan = async ({ amount, term_months, monthly_
       r = Number(db._policies?.pricing?.base_monthly_rate ?? 0.045);
     }
   }
-
   if (!(P > 0) || !(n > 0)) return { ok: false, error: "invalid_inputs" };
 
   const A = annuity(P, r, n);
@@ -219,14 +222,13 @@ window.clientTools.computeRepaymentPlan = async ({ amount, term_months, monthly_
     rate_monthly: round2(r)
   };
 
-  // (opsiyonel) son planı hafifçe hatırla
   window.__lastPlan = { amount: P, term: n, rate: r, schedule, summary };
   return { ok: true, summary, schedule };
 };
 
 /**
  * compareTerms(amount: number, terms: number[], customer_id?: string)
- * -> { ok, items: [{term, monthly_payment, total_interest}] }
+ * -> { ok, items: [{term, monthly_payment, total_interest}], rate_monthly }
  */
 window.clientTools.compareTerms = async ({ amount, terms, customer_id }) => {
   const db = await loadDB();
@@ -282,7 +284,6 @@ window.clientTools.restructureOptions = async ({ customer_id, loan_id }) => {
   const pol = db._policies || {};
   if (!pol.restructuring?.allowed) return { ok: false, error: "not_allowed" };
 
-  // yeni oran politikası: keep current or base+risk
   const keepRate = Number(loan.rate_monthly || 0.045);
   const riskRate = effectiveMonthlyRateForScore(db, Number(rec.credit_score ?? 650));
   const r = pol.restructuring?.rate_policy === "keep_or_base_plus_risk" ? Math.max(keepRate, riskRate) : keepRate;
@@ -290,7 +291,6 @@ window.clientTools.restructureOptions = async ({ customer_id, loan_id }) => {
   const fee = Number(pol.fees?.restructure_processing_fee ?? 250);
   const terms = pol.restructuring?.allowed_new_terms || [12, 24, 36];
 
-  // kalan bakiye üzerinde hesapla (yaklaşık)
   const P = Number(loan.remaining_balance || loan.principal);
   const options = terms.map(n => ({
     new_term: Number(n),
@@ -332,14 +332,12 @@ window.clientTools.submitLoanApplication = async ({ customer_id, desired_loan_am
   const name = rec?.name || "Müşterimiz";
   setDV({ customer_id: id, customer_name: name });
 
-  // Eligibility
   const elig = await window.clientTools.eligibilityCheck({
     customer_id: id,
     desired_amount: Number(desired_loan_amount),
     term_months: Number(term_months)
   });
 
-  // Plan
   let monthly = 0;
   if (elig.ok && elig.approve) {
     const plan = await window.clientTools.computeRepaymentPlan({
