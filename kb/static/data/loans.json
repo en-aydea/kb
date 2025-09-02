@@ -1,0 +1,208 @@
+{
+  "_meta": {
+    "version": "1.0.0",
+    "last_updated": "2025-09-02"
+  },
+
+  "_policies": {
+    "pricing": {
+      "base_monthly_rate": 0.045,
+      "risk_addon_by_score": [
+        { "min_score": 1300, "addon": -0.010 },
+        { "min_score": 1200, "addon": -0.005 },
+        { "min_score": 1100, "addon": 0.000 },
+        { "min_score": 1000, "addon": 0.010 },
+        { "min_score": 900,   "addon": 0.020 }
+      ],
+      "min_term_months": 6,
+      "max_term_months": 60
+    },
+    "fees": {
+      "origination_rate": 0.005,
+      "early_prepayment_penalty_rate": 0.02,
+      "late_fee_flat": 150.0,
+      "restructure_processing_fee": 250.0
+    },
+    "repayment": {
+      "due_day": 15,
+      "grace_days": 5,
+      "late_fee_applies_after_days": 5,
+      "partial_payment_allowed": true
+    },
+    "eligibility": {
+      "min_credit_score": 1000,
+      "max_delinquency_days": 30,
+      "max_dsr": 0.45,
+      "demo_default_preapproved_limit": 250000
+    },
+    "restructuring": {
+      "allowed": true,
+      "allowed_new_terms": [12, 18, 24, 36, 48],
+      "rate_policy": "keep_or_base_plus_risk"
+    },
+    "deferral": {
+      "allowed": true,
+      "max_deferrals_per_year": 2,
+      "deferral_interest_capitalized": true
+    }
+  },
+
+"_faq": {
+  "Ücretler ve Masraflar": [
+    {
+      "q": "Erken kapama ücreti nedir?",
+      "a": "Erken kapama ücreti, kredinizi vadesinden önce tamamen kapatmak istediğinizde kalan anapara üzerinden alınır. Mevzuata göre bu oran %2’yi geçemez. Örneğin, kalan borcunuz 50.000 TL ise en fazla 1.000 TL alınır. Erken kapama talebinizi şubelerimizden, internet bankacılığından veya mobil uygulamadan iletebilirsiniz."
+    },
+    {
+      "q": "Tahsis ücreti var mı?",
+      "a": "Evet, kredi tahsis ücreti kredi tutarının %0,5’i olarak yansıtılır. Örneğin, 100.000 TL kredi kullandığınızda 500 TL tahsil edilir. Bu ücret BDDK tarafından belirlenen yasal sınırlar dahilindedir."
+    },
+    {
+      "q": "Gecikme olursa ne olur?",
+      "a": "Vade tarihinden itibaren 5 günü aşan gecikmelerde gecikme ücreti uygulanır. Ayrıca geciken tutara günlük gecikme faizi işler. Gecikme, kredi notunuzu olumsuz etkileyebilir."
+    },
+    {
+      "q": "Kredi taksitlerimi erken ödersem faiz indirimi olur mu?",
+      "a": "Evet, erken ödeme yaparsanız kalan anapara üzerinden faiz indirimi uygulanır. Erken ödeme ücreti kalan anapara üzerinden %1 olarak alınır. Kısmi erken ödeme de mümkündür."
+    },
+    {
+      "q": "Kredi sigortası zorunlu mu?",
+      "a": "Hayat sigortası zorunlu değildir ancak önerilir. Sigorta primi kredi tutarı, vade ve yaşınıza göre değişir."
+    }
+  ],
+  "Başvuru Süreci": [
+    {
+      "q": "Kredi başvurusu için hangi belgeler gerekir?",
+      "a": "Kimlik belgesi, gelir belgesi (maaş bordrosu, vergi levhası vb.) ve ikametgah belgesi gerekir. Banka ek belgeler talep edebilir."
+    },
+    {
+      "q": "Kredi başvurusu ne kadar sürede sonuçlanır?",
+      "a": "Genellikle aynı gün içinde sonuçlanır. Ek belge talebi veya teminat değerlendirmesi süreci uzatabilir."
+    },
+    {
+      "q": "Faiz oranı nasıl belirlenir?",
+      "a": "Faiz oranı; kredi türü, vade, piyasa koşulları ve kredi notunuza göre belirlenir. Güncel oran başvuru sırasında netleşir."
+    },
+    {
+      "q": "Kredi notum düşükse başvurum kabul olur mu?",
+      "a": "Kredi notu düşükse ek teminat veya kefil talep edilebilir. Onay, kredi değerlendirme sürecine bağlıdır."
+    },
+    {
+      "q": "Kredi başvurusu reddedilirse tekrar başvurabilir miyim?",
+      "a": "Evet, ancak kredi notunuzu iyileştirmek ve mevcut borçlarınızı azaltmak onay ihtimalinizi artırır."
+    }
+  ],
+  "Ödeme ve Yapılandırma": [
+    {
+      "q": "Ödeme planımı değiştirebilir miyim?",
+      "a": "Evet, vade uzatma, kısaltma veya taksit tutarı değişikliği yapılabilir. Bu işlem ek masraf veya faiz farkı doğurabilir."
+    },
+    {
+      "q": "Kredimi başka bankaya taşıyabilir miyim?",
+      "a": "Evet, kredi transferi (refinansman) mümkündür. Ancak erken kapama ücreti ve yeni kredi masrafları dikkate alınmalıdır."
+    }
+  ]
+},
+
+  "customers": {
+    "2349": {
+      "customer_id": "2349",
+      "name": "Kerem Ardağ",
+      "credit_score": 1750,
+      "income_monthly": 350000,
+      "debts_monthly": 32000,
+      "delinquency_days": 0,
+      "preapproved_max_amount": 250000,
+      "loan_offers": [
+        { "amount": 200000, "term_months": 12, "note": "Hızlı onay" },
+        { "amount": 250000, "term_months": 24, "note": "Standart" }
+      ],
+      "loans": [
+        {
+          "loan_id": "KARABANK Cebinde Kredisi",
+          "type": "ihtiyac",
+          "principal": 30000,
+          "start_date": "2025-02-15",
+          "original_term_months": 24,
+          "rate_monthly": 0.030,
+          "status": "active",
+          "remaining_balance": 20500,
+          "remaining_term": 16,
+          "next_due_date": "2025-09-15",
+          "next_due_amount": 1900,
+          "payment_history": [
+            { "date": "2025-03-15", "amount": 1900, "principal": 1400, "interest": 500, "late_fee": 0 },
+            { "date": "2025-04-15", "amount": 1900, "principal": 1420, "interest": 480, "late_fee": 0 }
+          ],
+          "deferrals_used_this_year": 0
+        }
+      ]
+    },
+
+    "1234": {
+      "customer_id": "1234",
+      "name": "Enes Aydın",
+      "credit_score": 1500,
+      "income_monthly": 120000,
+      "debts_monthly": 30000,
+      "delinquency_days": 5,
+      "preapproved_max_amount": 100000,
+      "loan_offers": [
+        { "amount": 20000, "term_months": 12, "note": "Hızlı" },
+        { "amount": 35000, "term_months": 24, "note": "Standart" }
+      ],
+      "loans": [
+        {
+          "loan_id": "L-ENS-002",
+          "type": "ihtiyac",
+          "principal": 20000,
+          "start_date": "2024-12-15",
+          "original_term_months": 18,
+          "rate_monthly": 0.045,
+          "status": "active",
+          "remaining_balance": 11000,
+          "remaining_term": 9,
+          "next_due_date": "2025-09-15",
+          "next_due_amount": 1650,
+          "payment_history": [
+            { "date": "2025-01-15", "amount": 1650, "principal": 1100, "interest": 550, "late_fee": 0 },
+            { "date": "2025-02-20", "amount": 1650, "principal": 1080, "interest": 570, "late_fee": 150 }
+          ],
+          "deferrals_used_this_year": 1
+        }
+      ]
+    },
+
+    "2838": {
+      "customer_id": "2838",
+      "name": "Eralp Şirincan",
+      "credit_score": 610,
+      "income_monthly": 26000,
+      "debts_monthly": 1400,
+      "delinquency_days": 40,
+      "preapproved_max_amount": 25000,
+      "loan_offers": [
+        { "amount": 15000, "term_months": 12, "note": "Düşük tutar önerilir" }
+      ],
+      "loans": [
+        {
+          "loan_id": "L-ERL-003",
+          "type": "ihtiyac",
+          "principal": 15000,
+          "start_date": "2025-05-15",
+          "original_term_months": 12,
+          "rate_monthly": 0.050,
+          "status": "active",
+          "remaining_balance": 13000,
+          "remaining_term": 10,
+          "next_due_date": "2025-09-15",
+          "next_due_amount": 1600,
+          "payment_history": [
+            { "date": "2025-06-15", "amount": 1600, "principal": 1100, "interest": 500, "late_fee": 0 }
+          ],
+          "deferrals_used_this_year": 0
+        }
+      ]
+    }
+  }
+}
