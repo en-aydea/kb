@@ -27,6 +27,40 @@ function round2(x) {
   return Number((Math.round((x + Number.EPSILON) * 100) / 100).toFixed(2));
 }
 
+// --- Turkish number word → digit helpers ---
+const WORD2DIGIT = {
+  "sıfır":"0","sifir":"0","0":"0",
+  "bir":"1","1":"1",
+  "iki":"2","2":"2",
+  "üç":"3","uc":"3","3":"3",
+  "dört":"4","dort":"4","4":"4",
+  "beş":"5","bes":"5","5":"5",
+  "altı":"6","alti":"6","6":"6",
+  "yedi":"7","7":"7",
+  "sekiz":"8","8":"8",
+  "dokuz":"9","9":"9"
+};
+
+function toDigitsFromTurkishWords(input) {
+  if (!input) return "";
+  const txt = String(input).toLowerCase().replace(/[^\p{L}\p{N}\s-]/gu, " ");
+  const parts = txt.split(/[\s-]+/).filter(Boolean);
+  const buf = [];
+  for (const p of parts) {
+    if (/^\d+$/.test(p)) { buf.push(p); continue; }   // already digits
+    const d = WORD2DIGIT[p];
+    if (d !== undefined) buf.push(d);                 // word → single digit
+  }
+  const joined = buf.join("");
+  return joined || String(input).replace(/\D/g, "");  // fallback: strip non-digits
+}
+
+function normalizeCustomerId(anyForm) {
+  const id = toDigitsFromTurkishWords(anyForm);
+  return id.replace(/\D/g, "");
+}
+
+
 // ---------- Load & Cache JSON ----------
 let LOANS_DB = null;
 
@@ -67,14 +101,30 @@ window.clientTools = window.clientTools || {};
  * getCustomerName(spoken_customer_id: string)
  * -> { ok, customer_id, customer_name }
  */
-window.clientTools.getCustomerName = async ({ spoken_customer_id }) => {
-  const db = await loadDB();
-  const id = normalizeDigits(spoken_customer_id);
-  const rec = db.customers?.[id];
-  if (!rec) return { ok: false, error: "customer_not_found", customer_id: id };
-  setDV({ customer_id: id, customer_name: rec.name });
-  return { ok: true, customer_id: id, customer_name: rec.name };
+window.clientTools.getCustomerName = async (args) => {
+  try {
+    // Parametre adı bazen yanlış gelebilir; ikisini de destekle
+    const rawId = (args && (args.spoken_customer_id ?? args.customer_id)) || "";
+    const id = normalizeCustomerId(rawId);
+
+    const db = await loadDB();
+    const rec = db.customers?.[id];
+    if (!rec || !rec.name) {
+      console.warn("[getCustomerName] not found:", { rawId, id });
+      return { ok:false, error:"customer_not_found", customer_id:id };
+    }
+
+    // Dynamic variables: agent prompt'u {{customer_name}} kullanacak
+    setDV({ customer_id: id, customer_name: rec.name });
+
+    console.log("[getCustomerName] OK:", { rawId, id, name: rec.name });
+    return { ok:true, customer_id: id, customer_name: rec.name };
+  } catch (e) {
+    console.error("[getCustomerName] error:", e);
+    return { ok:false, error:"unexpected_error" };
+  }
 };
+
 
 /**
  * fetchCustomerSnapshot(customer_id: string)
